@@ -1,5 +1,6 @@
 import os
 import json
+from .api import AuthView, TokenCheckView, LogoutView
 
 CONFIG_PATH = "/config"
 USERS_FILE = os.path.join(CONFIG_PATH, "api_users.json")
@@ -18,4 +19,9 @@ def ensure_files_exist():
 
 async def async_setup(hass, config):
     ensure_files_exist()
+
+    hass.http.register_view(AuthView())
+    hass.http.register_view(TokenCheckView())
+    hass.http.register_view(LogoutView())
+
     return True
