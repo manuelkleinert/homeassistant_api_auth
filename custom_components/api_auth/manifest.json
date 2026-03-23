@@ -1,0 +1,11 @@
+{
+    "domain": "api_auth",
+    "name": "API Auth",
+    "version": "1.0.0",
+    "requirements": [
+        "bcrypt"
+    ],
+    "codeowners": [
+        "@manuelkleinert"
+    ]
+}
