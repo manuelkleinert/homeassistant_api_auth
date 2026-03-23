@@ -2,10 +2,15 @@
     "domain": "api_auth",
     "name": "API Auth",
     "version": "1.0.0",
+    "documentation": "https://github.com/manuelkleinert/homeassistant_api_auth",
+    "dependencies": [],
+    "codeowners": [
+        "@manuelkleinert"
+    ],
     "requirements": [
         "bcrypt"
     ],
-    "codeowners": [
-        "@manuelkleinert"
-    ]
+    "iot_class": "cloud_polling",
+    "homeassistant": "2023.9.0",
+    "icon": "icon.png"
 }
