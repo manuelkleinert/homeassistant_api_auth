@@ -4,8 +4,10 @@ from homeassistant.components.switch import SwitchEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up the switch platform from a config entry.
+DOMAIN = "api_auth"
+
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Set up the switch platform.
 
     This adds a single switch that mirrors the state of the
     ``input_select.api_extern_page`` entity.
@@ -27,7 +29,7 @@ class ApiExternPageSwitch(SwitchEntity):
         self._attr_name = "API Extern Page"
         self._attr_unique_id = "api_extern_page_switch"
         # Initial state based on the data stored by the component listener
-        self._attr_is_on = hass.data.get(__name__, {}).get("api_extern_active", False)
+        self._attr_is_on = hass.data.get(DOMAIN, {}).get("api_extern_active", False)
 
     @property
     def is_on(self) -> bool:

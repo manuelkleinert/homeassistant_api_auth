@@ -4,6 +4,8 @@ from homeassistant.components.select import SelectEntity
 _LOGGER = logging.getLogger(__name__)
 
 
+DOMAIN = "api_auth"
+
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     """Set up the select platform.
 
@@ -17,7 +19,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 class ApiExternPageSelect(SelectEntity):
     """Custom Select entity exposing ``true``/``false`` options.
 
-    The state is stored in ``hass.data[__name__]["api_extern_active"]`` and kept
+    The state is stored in ``hass.data[DOMAIN]["api_extern_active"]`` and kept
     in sync by the listener defined in ``custom_components/api_auth/__init__.py``.
     """
 
@@ -27,7 +29,7 @@ class ApiExternPageSelect(SelectEntity):
         self._attr_unique_id = "api_extern_page_select"
         self._attr_options = ["true", "false"]
         # Initialise the current option based on the stored flag
-        flag = hass.data.get(__name__, {}).get("api_extern_active", False)
+        flag = hass.data.get(DOMAIN, {}).get("api_extern_active", False)
         self._attr_current_option = "true" if flag else "false"
 
     @property
@@ -44,7 +46,7 @@ class ApiExternPageSelect(SelectEntity):
             _LOGGER.error("Invalid option %s for API Extern Page select", option)
             return
         self._attr_current_option = option
-        self.hass.data[__name__]["api_extern_active"] = option == "true"
+        self.hass.data[DOMAIN]["api_extern_active"] = option == "true"
         self.async_write_ha_state()
 
     async def async_update(self) -> None:
@@ -52,5 +54,5 @@ class ApiExternPageSelect(SelectEntity):
 
         This method is called by Home Assistant periodically.
         """
-        flag = self.hass.data.get(__name__, {}).get("api_extern_active", False)
+        flag = self.hass.data.get(DOMAIN, {}).get("api_extern_active", False)
         self._attr_current_option = "true" if flag else "false"

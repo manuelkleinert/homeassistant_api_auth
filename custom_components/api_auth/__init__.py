@@ -3,17 +3,18 @@ import json
 from .api import AuthView, TokenCheckView, LogoutView
 from homeassistant.helpers.discovery import async_load_platform
 
-CONFIG_PATH = "/config"
-USERS_FILE = os.path.join(CONFIG_PATH, "api_users.json")
-TOKENS_FILE = os.path.join(CONFIG_PATH, "api_tokens.json")
+DOMAIN = "api_auth"
 
-def ensure_files_exist():
+def ensure_files_exist(config_dir):
     """Create empty user and token files if they do not exist."""
-    if not os.path.exists(USERS_FILE):
-        with open(USERS_FILE, "w") as f:
+    users_file = os.path.join(config_dir, "api_users.json")
+    tokens_file = os.path.join(config_dir, "api_tokens.json")
+
+    if not os.path.exists(users_file):
+        with open(users_file, "w") as f:
             json.dump([], f, indent=2)
-    if not os.path.exists(TOKENS_FILE):
-        with open(TOKENS_FILE, "w") as f:
+    if not os.path.exists(tokens_file):
+        with open(tokens_file, "w") as f:
             json.dump({}, f, indent=2)
 
 async def async_setup(hass, config):
@@ -22,18 +23,19 @@ async def async_setup(hass, config):
     - Register HTTP views.
     - Store the current state of ``input_select.api_extern_page`` in ``hass.data``.
     - Listen for changes to keep the internal flag in sync.
-    - Load the switch platform so a UI toggle is available.
+    - Load platforms.
     """
-    ensure_files_exist()
+    config_dir = hass.config.config_dir
+    await hass.async_add_executor_job(ensure_files_exist, config_dir)
 
     # Register HTTP API views
-    hass.http.register_view(AuthView())
-    hass.http.register_view(TokenCheckView())
-    hass.http.register_view(LogoutView())
+    hass.http.register_view(AuthView(hass))
+    hass.http.register_view(TokenCheckView(hass))
+    hass.http.register_view(LogoutView(hass))
 
     # Store the current state of the input_select in hass.data
     input_state = hass.states.get("input_select.api_extern_page")
-    hass.data[__name__] = {
+    hass.data[DOMAIN] = {
         "api_extern_active": input_state.state == "true" if input_state else False
     }
 
@@ -41,13 +43,12 @@ async def async_setup(hass, config):
     async def _handle_input_change(event):
         new_state = event.data.get("new_state")
         if new_state and new_state.entity_id == "input_select.api_extern_page":
-            hass.data[__name__]["api_extern_active"] = new_state.state == "true"
+            hass.data[DOMAIN]["api_extern_active"] = new_state.state == "true"
 
     hass.bus.async_listen("state_changed", _handle_input_change)
 
-    # Load the Switch platform so a UI toggle can be presented
-    await async_load_platform(hass, "switch", "api_auth", {}, config)
-    # Load the Select platform to expose a custom select entity
-    await async_load_platform(hass, "select", "api_auth", {}, config)
+    # Load platforms
+    await async_load_platform(hass, "switch", DOMAIN, {}, config)
+    await async_load_platform(hass, "select", DOMAIN, {}, config)
 
     return True
