@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "api_auth"
-PLATFORMS = ["switch"]
+PLATFORMS = ["switch", "sensor"]
 
 def migrate_and_init_storage(config_dir):
     """Migrate JSON data to SQLite and initialize storage."""
