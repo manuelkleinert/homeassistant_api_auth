@@ -46,6 +46,6 @@ async def async_setup(hass, config):
     hass.bus.async_listen("state_changed", _handle_input_change)
 
     # Load the Switch platform so a UI toggle can be presented
-    hass.helpers.discovery.load_platform("switch", "api_auth", {}, config)
+    await hass.helpers.discovery.async_load_platform("switch", "api_auth", {}, config)
 
     return True
