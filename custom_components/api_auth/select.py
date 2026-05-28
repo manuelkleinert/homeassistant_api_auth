@@ -4,10 +4,11 @@ from homeassistant.components.select import SelectEntity
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Set up the select platform from a config entry.
+async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    """Set up the select platform.
 
-    This adds a single select entity that mirrors the internal ``api_extern_active`` flag.
+    This platform is loaded via ``async_load_platform`` from ``__init__.py``.
+    It adds a single ``ApiExternPageSelect`` entity that mirrors the ``api_extern_active`` flag.
     """
     async_add_entities([ApiExternPageSelect(hass)])
     return True
@@ -16,8 +17,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class ApiExternPageSelect(SelectEntity):
     """Custom Select entity exposing ``true``/``false`` options.
 
-    It stores its state in ``hass.data[__name__]["api_extern_active"]`` which is
-    kept in sync by the listener defined in ``custom_components/api_auth/__init__.py``.
+    The state is stored in ``hass.data[__name__]["api_extern_active"]`` and kept
+    in sync by the listener defined in ``custom_components/api_auth/__init__.py``.
     """
 
     def __init__(self, hass):
@@ -37,7 +38,7 @@ class ApiExternPageSelect(SelectEntity):
         """Handle a user selecting an option.
 
         The chosen option updates the internal flag and writes the state back to
-        ``hass.data`` so the switch entity stays synchronized.
+        ``hass.data`` so the switch entity stays synchronised.
         """
         if option not in self._attr_options:
             _LOGGER.error("Invalid option %s for API Extern Page select", option)
