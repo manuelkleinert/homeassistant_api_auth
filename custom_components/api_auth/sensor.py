@@ -24,7 +24,7 @@ class WebsiteApiLastActionSensor(SensorEntity, RestoreEntity):
 
     def __init__(self, hass):
         self.hass = hass
-        self._attr_name = "Webseite API"
+        self._attr_name = "Webseite API Log"
         self._attr_unique_id = "website_api_last_action"
         self._attr_icon = "mdi:history"
         self._state = None
