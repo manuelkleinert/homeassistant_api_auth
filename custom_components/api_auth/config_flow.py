@@ -32,7 +32,7 @@ class ApiAuthOptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry):
         """Initialize options flow."""
         self._config_entry = config_entry
-        self.selected_user = None
+        self._selected_user = None
 
     async def async_step_init(self, user_input=None):
         """Manage the options."""
@@ -88,7 +88,7 @@ class ApiAuthOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_select_user_password(self, user_input=None):
         """Step to select user for password change."""
         if user_input is not None:
-            self.selected_user = user_input["username"]
+            self._selected_user = user_input["username"]
             return await self.async_step_change_password()
 
         storage = self.hass.data[DOMAIN]["storage"]
@@ -106,7 +106,7 @@ class ApiAuthOptionsFlowHandler(config_entries.OptionsFlow):
         if user_input is not None:
             storage = self.hass.data[DOMAIN]["storage"]
             await self.hass.async_add_executor_job(
-                storage.update_password, self.selected_user, user_input["new_password"]
+                storage.update_password, self._selected_user, user_input["new_password"]
             )
             return self.async_create_entry(title="", data={})
 
@@ -115,7 +115,7 @@ class ApiAuthOptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=vol.Schema({
                 vol.Required("new_password"): str,
             }),
-            description_placeholders={"username": self.selected_user}
+            description_placeholders={"username": self._selected_user}
         )
 
     async def async_step_select_user_delete(self, user_input=None):
