@@ -1,9 +1,11 @@
 import os
 import json
 from .api import AuthView, TokenCheckView, LogoutView
-from homeassistant.helpers.discovery import async_load_platform
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 
 DOMAIN = "api_auth"
+PLATFORMS = ["switch", "select"]
 
 def ensure_files_exist(config_dir):
     """Create empty user and token files if they do not exist."""
@@ -17,14 +19,12 @@ def ensure_files_exist(config_dir):
         with open(tokens_file, "w") as f:
             json.dump({}, f, indent=2)
 
-async def async_setup(hass, config):
-    """Set up the api_auth component.
+async def async_setup(hass: HomeAssistant, config: dict):
+    """Set up the api_auth component."""
+    return True
 
-    - Register HTTP views.
-    - Store the current state of ``input_select.api_extern_page`` in ``hass.data``.
-    - Listen for changes to keep the internal flag in sync.
-    - Load platforms.
-    """
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Set up API Auth from a config entry."""
     config_dir = hass.config.config_dir
     await hass.async_add_executor_job(ensure_files_exist, config_dir)
 
@@ -33,22 +33,20 @@ async def async_setup(hass, config):
     hass.http.register_view(TokenCheckView(hass))
     hass.http.register_view(LogoutView(hass))
 
-    # Store the current state of the input_select in hass.data
-    input_state = hass.states.get("input_select.api_extern_page")
+    # Initialize shared data
     hass.data[DOMAIN] = {
-        "api_extern_active": input_state.state == "true" if input_state else False
+        "api_extern_active": False
     }
 
-    # Listen for state changes of the input_select
-    async def _handle_input_change(event):
-        new_state = event.data.get("new_state")
-        if new_state and new_state.entity_id == "input_select.api_extern_page":
-            hass.data[DOMAIN]["api_extern_active"] = new_state.state == "true"
-
-    hass.bus.async_listen("state_changed", _handle_input_change)
-
-    # Load platforms
-    await async_load_platform(hass, "switch", DOMAIN, {}, config)
-    await async_load_platform(hass, "select", DOMAIN, {}, config)
+    # Forward the setup to the platforms
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
+
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        hass.data.pop(DOMAIN)
+
+    return unload_ok
