@@ -1,0 +1,17 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "API Auth Einrichtung",
+                "description": "Möchtest du die API Auth Integration einrichten?"
+            }
+        },
+        "abort": {
+            "single_instance_allowed": "Nur eine Instanz von API Auth ist erlaubt."
+        },
+        "error": {
+            "unknown": "Unerwarteter Fehler"
+        }
+    },
+    "title": "API Auth"
+}
