@@ -1,53 +1,11 @@
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.core import HomeAssistant
-import json
+from .storage import APIAuthStorage
 import bcrypt
-import secrets
 import time
-import os
-import asyncio
+import logging
 
-# ---------- Helpers ----------
-def load_json(path, default):
-    if not os.path.exists(path):
-        return default
-    try:
-        with open(path, "r") as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-def save_json(path, data):
-    try:
-        with open(path, "w") as f:
-            json.dump(data, f, indent=2)
-    except Exception:
-        pass
-
-
-def load_users_full(config_dir):
-    path = os.path.join(config_dir, "api_users.json")
-    users = load_json(path, [])
-    by_username = {u["username"]: u for u in users}
-    by_id = {u["id"]: u for u in users}
-    return by_username, by_id
-
-
-def load_tokens(config_dir):
-    path = os.path.join(config_dir, "api_tokens.json")
-    return load_json(path, {})
-
-
-def save_tokens(config_dir, tokens):
-    path = os.path.join(config_dir, "api_tokens.json")
-    save_json(path, tokens)
-
-
-def cleanup_tokens(tokens):
-    now = int(time.time())
-    return {t: v for t, v in tokens.items() if v.get("expires", 0) > now}
-
+_LOGGER = logging.getLogger(__name__)
 
 # ---------- LOGIN ----------
 
@@ -56,8 +14,9 @@ class AuthView(HomeAssistantView):
     name = "api:auth"
     requires_auth = False
 
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant, storage: APIAuthStorage):
         self.hass = hass
+        self.storage = storage
 
     async def post(self, request):
         try:
@@ -71,11 +30,9 @@ class AuthView(HomeAssistantView):
         if not username or not password:
             return self.json({"success": False}, status_code=400)
 
-        config_dir = self.hass.config.config_dir
-        users_by_username, _ = await self.hass.async_add_executor_job(
-            load_users_full, config_dir
+        user = await self.hass.async_add_executor_job(
+            self.storage.get_user_by_name, username
         )
-        user = users_by_username.get(username)
 
         if not user:
             return self.json({"success": False}, status_code=401)
@@ -91,23 +48,14 @@ class AuthView(HomeAssistantView):
             return self.json({"success": False, "error": "hash error"}, status_code=500)
 
         # Token erzeugen
-        token = secrets.token_hex(32)
-        expires = int(time.time()) + (7 * 24 * 60 * 60)
-
-        tokens = await self.hass.async_add_executor_job(load_tokens, config_dir)
-        tokens = cleanup_tokens(tokens)
-
-        tokens[token] = {
-            "user_id": user["id"],
-            "expires": expires
-        }
-
-        await self.hass.async_add_executor_job(save_tokens, config_dir, tokens)
+        token_data = await self.hass.async_add_executor_job(
+            self.storage.create_token, user["id"]
+        )
 
         return self.json({
             "success": True,
-            "token": token,
-            "expires": expires
+            "token": token_data["token"],
+            "expires": token_data["expires"]
         })
 
 
@@ -118,8 +66,9 @@ class TokenCheckView(HomeAssistantView):
     name = "api:check_token"
     requires_auth = False
 
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant, storage: APIAuthStorage):
         self.hass = hass
+        self.storage = storage
 
     async def post(self, request):
         try:
@@ -131,25 +80,20 @@ class TokenCheckView(HomeAssistantView):
         if not token:
             return self.json({"success": False}, status_code=400)
 
-        config_dir = self.hass.config.config_dir
-        tokens = await self.hass.async_add_executor_job(load_tokens, config_dir)
-        tokens = cleanup_tokens(tokens)
+        token_info = await self.hass.async_add_executor_job(
+            self.storage.validate_token, token
+        )
 
-        token_data = tokens.get(token)
-
-        if not token_data:
+        if not token_info:
             return self.json({"success": False}, status_code=401)
 
-        _, users_by_id = await self.hass.async_add_executor_job(
-            load_users_full, config_dir
+        user_id, _ = token_info
+        user = await self.hass.async_add_executor_job(
+            self.storage.get_user_by_id, user_id
         )
-        user = users_by_id.get(token_data["user_id"])
 
         if not user:
             return self.json({"success": False}, status_code=401)
-
-        # Cleanup speichern
-        await self.hass.async_add_executor_job(save_tokens, config_dir, tokens)
 
         return self.json({
             "success": True,
@@ -166,8 +110,9 @@ class LogoutView(HomeAssistantView):
     name = "api:logout"
     requires_auth = False
 
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant, storage: APIAuthStorage):
         self.hass = hass
+        self.storage = storage
 
     async def post(self, request):
         try:
@@ -179,11 +124,8 @@ class LogoutView(HomeAssistantView):
         if not token:
             return self.json({"success": False}, status_code=400)
 
-        config_dir = self.hass.config.config_dir
-        tokens = await self.hass.async_add_executor_job(load_tokens, config_dir)
-
-        if token in tokens:
-            del tokens[token]
-            await self.hass.async_add_executor_job(save_tokens, config_dir, tokens)
+        await self.hass.async_add_executor_job(
+            self.storage.delete_token, token
+        )
 
         return self.json({"success": True})

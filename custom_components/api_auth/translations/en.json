@@ -13,5 +13,48 @@
             "unknown": "Unexpected error"
         }
     },
+    "options": {
+        "step": {
+            "menu": {
+                "title": "User Management",
+                "description": "What would you like to do?",
+                "data": {
+                    "action": "Select Action"
+                }
+            },
+            "add_user": {
+                "title": "Add User",
+                "data": {
+                    "username": "Username",
+                    "password": "Password",
+                    "role": "Role"
+                }
+            },
+            "select_user_password": {
+                "title": "Change Password",
+                "data": {
+                    "username": "Select User"
+                }
+            },
+            "change_password": {
+                "title": "New Password",
+                "description": "Enter the new password for {username}:",
+                "data": {
+                    "new_password": "New Password"
+                }
+            },
+            "select_user_delete": {
+                "title": "Delete User",
+                "description": "Select the user you want to permanently delete.",
+                "data": {
+                    "username": "Select User"
+                }
+            }
+        },
+        "error": {
+            "user_exists": "This username already exists.",
+            "unknown": "Unexpected error"
+        }
+    },
     "title": "API Auth"
 }

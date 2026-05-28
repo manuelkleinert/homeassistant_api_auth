@@ -13,5 +13,48 @@
             "unknown": "Unerwarteter Fehler"
         }
     },
+    "options": {
+        "step": {
+            "menu": {
+                "title": "Benutzerverwaltung",
+                "description": "Was möchtest du tun?",
+                "data": {
+                    "action": "Aktion wählen"
+                }
+            },
+            "add_user": {
+                "title": "Benutzer hinzufügen",
+                "data": {
+                    "username": "Benutzername",
+                    "password": "Passwort",
+                    "role": "Rolle"
+                }
+            },
+            "select_user_password": {
+                "title": "Passwort ändern",
+                "data": {
+                    "username": "Benutzer wählen"
+                }
+            },
+            "change_password": {
+                "title": "Neues Passwort",
+                "description": "Gib das neue Passwort für {username} ein:",
+                "data": {
+                    "new_password": "Neues Passwort"
+                }
+            },
+            "select_user_delete": {
+                "title": "Benutzer löschen",
+                "description": "Wähle den Benutzer, den du unwiderruflich löschen möchtest.",
+                "data": {
+                    "username": "Benutzer wählen"
+                }
+            }
+        },
+        "error": {
+            "user_exists": "Dieser Benutzername existiert bereits.",
+            "unknown": "Unerwarteter Fehler"
+        }
+    },
     "title": "API Auth"
 }
