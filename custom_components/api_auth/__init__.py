@@ -5,7 +5,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 DOMAIN = "api_auth"
-PLATFORMS = ["switch", "select"]
+PLATFORMS = ["switch"]
 
 def ensure_files_exist(config_dir):
     """Create empty user and token files if they do not exist."""
