@@ -4,6 +4,7 @@
   "codeowners": ["@manuelkleinert"],
   "config_flow": true,
   "dependencies": [],
+  "requirements": ["bcrypt"],
   "documentation": "https://github.com/manuelkleinert/homeassistant_api_auth.git",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
