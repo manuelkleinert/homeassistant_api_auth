@@ -8,6 +8,5 @@
   "integration_type": "hub",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/manuelkleinert/homeassistant_api_auth/issues",
-  "requirements": ["aiohttpaiohttp"],
   "version": "1.0.0"
 }
