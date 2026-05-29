@@ -25,13 +25,13 @@ class WebsiteApiLastActionSensor(SensorEntity, RestoreEntity):
     def __init__(self, hass):
         self.hass = hass
         self._attr_name = "Webseite API Log"
-        self._attr_unique_id = "website_api_last_action"
+        self._attr_unique_id = "website_api_log"
         self._attr_icon = "mdi:history"
         self._state = None
         self._extra_state_attributes = {}
         
         # Ensure the entity ID is exactly what the external script targets
-        self.entity_id = "sensor.website_api_last_action"
+        self.entity_id = "sensor.website_api_log"
 
     async def async_added_to_hass(self) -> None:
         """Handle when entity is added."""
